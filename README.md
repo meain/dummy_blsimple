@@ -1,0 +1,2 @@
+- start `ganache_cli`
+- `node server.sh`
