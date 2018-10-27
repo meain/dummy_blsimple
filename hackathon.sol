@@ -19,8 +19,6 @@ contract PharmaData {
 
     mapping ( string => CroData[] ) dataMapping;
 
-    constructor() public {}
-
     function addData(string _pharma, string _cro, string _sat) public {
         dataMapping[_pharma].push(CroData(_cro, _sat));
     }
