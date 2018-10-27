@@ -1,0 +1,22 @@
+{
+  "name": "patient-consent-backend",
+  "version": "0.0.1",
+  "description": "Backend api server for patient consent ( blockchain ).",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon ./app.js"
+  },
+  "author": "Abin Simon <abinsimon10@gmail.com> (http://meain.github.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "eslint": "^4.16.0",
+    "express": "^4.16.2",
+    "ganache-cli": "^6.0.3",
+    "morgan": "^1.9.0",
+    "nodemon": "^1.14.11",
+    "solc": "^0.4.19",
+    "web3": "^0.20.4"
+  }
+}
