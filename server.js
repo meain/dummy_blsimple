@@ -20,7 +20,7 @@ app.use(cors()) // we might have to chage the nginx max_value as well
 app.use(bodyParser.json({ limit: '100mb' }))
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }))
 
-console.log(compiledCode.errors)
+if (compiledCode.errors) console.log(compiledCode.errors)
 
 const abi = JSON.parse(compiledCode.contracts[':PharmaData'].interface)
 let consentContract = web3.eth.contract(abi)
@@ -58,13 +58,17 @@ makeContract()
     console.log('err:', err)
   })
 
+const pharma = 'one'
+
 app.post('/addData', (req, res, next) => {
   const data = { cro: 'cro', sat: 'sat' }
-  const pharma = 'PharmaOne'
   const cro = 'cro'
   const sat = 'sat'
 
+  console.log('contract.addData:', contract.addData)
+
   contract.addData.call(pharma, cro, sat)
+
   const length = contract.getDataLength.call(pharma).toNumber()
   console.log('length:', length)
 
@@ -72,8 +76,6 @@ app.post('/addData', (req, res, next) => {
 })
 
 app.post('/getData', (req, res, next) => {
-  const pharma = 'PharmaOne'
-
   const length = contract.getDataLength.call(pharma).toNumber()
   console.log('length:', length)
 
