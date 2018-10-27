@@ -1,11 +1,6 @@
-const Web3 = require('web3')
+var Web3 = require('web3')
 const fs = require('fs')
 const solc = require('solc')
-
-// compile sol file
-const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
-const code = fs.readFileSync('hackathon.sol').toString()
-const compiledCode = solc.compile(code)
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -20,58 +15,29 @@ app.use(cors()) // we might have to chage the nginx max_value as well
 app.use(bodyParser.json({ limit: '100mb' }))
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }))
 
-if (compiledCode.errors) console.log(compiledCode.errors)
+var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
 
-const abi = JSON.parse(compiledCode.contracts[':PharmaData'].interface)
-let consentContract = web3.eth.contract(abi)
+const code = fs.readFileSync('hackathon.sol').toString()
+const compiledCode = solc.compile(code)
+const abiDef = JSON.parse(compiledCode.contracts[':PharmaData'].interface)
 const bytecode = compiledCode.contracts[':PharmaData'].bytecode
 
-const makeContract = () => {
-  return new Promise((resolve, reject) => {
-    let deployedContract = consentContract.new(
-      { data: bytecode, from: web3.eth.accounts[0], gas: 4700000 },
-      (error, contract) => {
-        if (!error) {
-          if (!deployedContract.address) {
-            // console.log( 'Contract transaction send: TransactionHash: ' + contract.transactionHash + ' waiting to be mined...')
-          } else {
-            // console.log('Contract mined! Address: ' + deployedContract.address)
-            let contractInstance = consentContract.at(deployedContract.address)
-            resolve({ contract: contractInstance, web3: web3 })
-          }
-        } else {
-          reject(error)
-        }
-      }
-    )
-  })
-}
-
+var con = web3.eth.contract(abiDef)
 let contract
-let w3
-makeContract()
-  .then(d => {
-    contract = d.contract
-    w3 = d.web3
-  })
-  .catch(err => {
-    console.log('err:', err)
-  })
+con.new({ data: bytecode, from: web3.eth.accounts[0], gas: 4700000 }, (e, c) => {
+  contract = c
+})
 
 const pharma = 'one'
 
 app.post('/addData', (req, res, next) => {
-  const data = { cro: 'cro', sat: 'sat' }
-  const cro = 'cro'
-  const sat = 'sat'
+  const data = req.body
 
-  console.log('contract.addData:', contract.addData)
+  const cro = data.cro
+  const sat = data.sat
+  console.log('cro, sat:', cro, sat)
 
-  contract.addData.call(pharma, cro, sat)
-
-  const length = contract.getDataLength.call(pharma).toNumber()
-  console.log('length:', length)
-
+  contract.addData.sendTransaction(pharma, cro, sat, { from: web3.eth.accounts[0], gas: 4200000 })
   res.json({ status: 'OK' })
 })
 
@@ -80,8 +46,10 @@ app.post('/getData', (req, res, next) => {
   console.log('length:', length)
 
   if (length > 0) {
-    info = contract.getData.call(pharma, 0)
-    console.log('info:', info)
+    for (let i = 0; i < length; i++) {
+      info = contract.getData.call(pharma, i)
+      console.log('info:', info)
+    }
   }
 
   res.json({ status: 'OK' })
